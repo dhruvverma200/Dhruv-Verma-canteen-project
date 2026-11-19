@@ -1,0 +1,2261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusBite — Single-College Canteen Pre-Ordering & Management</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Plus Jakarta Sans & Inter Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif']
+          },
+          colors: {
+            brand: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              200: '#fde68a',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              800: '#92400e',
+              900: '#78350f',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, .font-display { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+<body class="bg-[#faf8f5] text-slate-900 min-h-screen flex flex-col selection:bg-amber-200 selection:text-amber-950">
+
+  <!-- ==================== 1. AUTHENTICATION PORTAL (STUDENT & STAFF) ==================== -->
+  <div id="authPortal" class="min-h-screen flex flex-col lg:flex-row">
+    <!-- Left Editorial Culinary Showcase -->
+    <div class="lg:w-5/12 bg-slate-950 text-white p-8 sm:p-12 flex flex-col justify-between relative overflow-hidden">
+      <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:20px_20px]"></div>
+      <div class="relative z-10 flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 text-slate-950 flex items-center justify-center shadow-lg">
+          <i data-lucide="utensils" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <span class="text-xs font-bold uppercase tracking-widest text-amber-400 block">Campus Dining OS</span>
+          <h1 id="authCollegeName" class="text-lg font-extrabold tracking-tight text-white">KIET Engineering Technology</h1>
+        </div>
+      </div>
+
+      <div class="relative z-10 my-12 space-y-5">
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/30 text-amber-300 text-xs font-semibold">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Single-College Smart Canteen
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight">
+          Skip the break-time queue. <span class="text-amber-400">Pre-order fresh</span> on campus.
+        </h2>
+        <p class="text-slate-400 text-sm leading-relaxed max-w-md">
+          Order hot meals ahead of class breaks, pay securely with Razorpay UPI/Cards, and pick up effortlessly with your cryptographic counter QR ticket.
+        </p>
+
+        <div class="grid grid-cols-3 gap-3 pt-4 max-w-md">
+          <div class="p-3 rounded-2xl bg-white/5 border border-white/10">
+            <p class="text-amber-400 font-extrabold text-lg">0 min</p>
+            <p class="text-[11px] text-slate-400">Counter Wait</p>
+          </div>
+          <div class="p-3 rounded-2xl bg-white/5 border border-white/10">
+            <p class="text-emerald-400 font-extrabold text-lg">100%</p>
+            <p class="text-[11px] text-slate-400">QR Verified</p>
+          </div>
+          <div class="p-3 rounded-2xl bg-white/5 border border-white/10">
+            <p class="text-sky-400 font-extrabold text-lg">Instant</p>
+            <p class="text-[11px] text-slate-400">Auto Refunds</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative z-10 flex items-center justify-between text-xs text-slate-500 border-t border-slate-800/80 pt-5">
+        <span>Central Canteen • <span id="authHoursLabel">08:00 AM – 08:30 PM</span></span>
+        <span class="font-mono text-[11px] text-slate-600">LocalStorage Synced</span>
+      </div>
+    </div>
+
+    <!-- Right Sign-In & Registration Card -->
+    <div class="flex-1 flex items-center justify-center p-6 sm:p-12">
+      <div class="w-full max-w-md bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-200/50 p-7 sm:p-8 space-y-6">
+        <!-- Role Selector Tabs (Student vs Canteen Staff ONLY - College Admin is completely hidden) -->
+        <div class="space-y-2">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Select Portal Role</label>
+          <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200/80">
+            <button type="button" onclick="setAuthRole('STUDENT')" id="authRoleBtn-STUDENT"
+              class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 bg-white text-slate-900 shadow-xs">
+              <i data-lucide="graduation-cap" class="w-4 h-4 text-amber-600"></i> Student
+            </button>
+            <button type="button" onclick="setAuthRole('STAFF')" id="authRoleBtn-STAFF"
+              class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900">
+              <i data-lucide="chef-hat" class="w-4 h-4 text-amber-600"></i> Canteen Staff
+            </button>
+          </div>
+        </div>
+
+        <!-- Sign In / Register Toggle -->
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h3 id="authFormTitle" class="text-xl font-extrabold text-slate-900">Student Sign In</h3>
+            <p id="authFormSubtitle" class="text-xs text-slate-500 mt-0.5">Access your college canteen pre-order account</p>
+          </div>
+          <button type="button" onclick="toggleAuthMode()" id="authModeToggleBtn"
+            class="text-xs font-bold text-amber-700 hover:text-amber-800 underline underline-offset-2">
+            Create Account
+          </button>
+        </div>
+
+        <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
+          <div id="authRegisterFields" class="hidden space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+              <input type="text" id="authName" placeholder="e.g., Rohan Kulkarni"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+            <div>
+              <label id="authIdLabel" class="block text-xs font-semibold text-slate-700 mb-1">College Roll Number</label>
+              <input type="text" id="authIdentifier" placeholder="e.g., 2024CS108"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">College Email Address</label>
+            <div class="relative">
+              <i data-lucide="mail" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+              <input type="email" id="authEmail" required placeholder="student@kiet.edu.in"
+                class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+            <div class="relative">
+              <i data-lucide="lock" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+              <input type="password" id="authPassword" required placeholder="••••••••"
+                class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+          </div>
+
+          <button type="submit" id="authSubmitBtn"
+            class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+            <span>Sign In to Canteen</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </form>
+
+        <!-- One-Click Demo Credentials Helper -->
+        <div class="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-3.5 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-amber-900">Quick Demo Credentials</span>
+            <button type="button" onclick="fillDemoCredentials()"
+              class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold transition">
+              Auto-Fill & Sign In
+            </button>
+          </div>
+          <p id="demoHintText" class="text-xs text-amber-800 font-mono">
+            aarav@kiet.edu.in / student123
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 2. AUTHENTICATED APPLICATION WORKSPACE ==================== -->
+  <div id="appWorkspace" class="hidden flex-1 flex flex-col">
+    <!-- TOP STICKY NAVIGATION HEADER -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-wrap items-center justify-between gap-3 py-3.5">
+          <!-- Brand & College Title -->
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-sm shrink-0">
+              <i data-lucide="utensils" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 id="headerCollegeName" class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">
+                  KIET Engineering Technology
+                </h1>
+                <span id="roleHeaderBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
+                  Student Portal
+                </span>
+              </div>
+              <p id="headerCanteenSubtitle" class="text-xs text-slate-500">
+                Central Canteen • 08:00 AM – 08:30 PM
+              </p>
+            </div>
+          </div>
+
+          <!-- Right Controls: Active User Info, Notifications, Sign Out -->
+          <div class="flex items-center gap-2.5">
+            <!-- College Admin Exit Button (Only visible when unlocked via Ctrl+Shift+F) -->
+            <button id="exitAdminBtn" onclick="lockAndExitAdmin()" class="hidden px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition">
+              <i data-lucide="lock" class="w-3.5 h-3.5"></i> Lock & Exit Admin
+            </button>
+
+            <div class="hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl bg-slate-100 border border-slate-200/80">
+              <div class="w-7 h-7 rounded-full bg-slate-900 text-amber-400 font-bold text-xs flex items-center justify-center" id="userAvatarInitial">
+                A
+              </div>
+              <div class="text-left">
+                <p id="activeUserNameDisplay" class="text-xs font-bold text-slate-900 leading-none">Aarav Sharma</p>
+                <p id="activeUserEmailDisplay" class="text-[10px] text-slate-500 mt-0.5">aarav@kiet.edu.in</p>
+              </div>
+            </div>
+
+            <!-- Notification Bell -->
+            <button onclick="toggleNotificationDrawer()" class="relative p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition" aria-label="Notifications">
+              <i data-lucide="bell" class="w-5 h-5"></i>
+              <span id="notifBadge" class="hidden absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-600 text-white text-[11px] font-bold flex items-center justify-center">0</span>
+            </button>
+
+            <!-- Sign Out Button -->
+            <button onclick="logoutUser()" class="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
+              <span class="hidden md:inline">Sign Out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+      <!-- ==================== PANEL A: STUDENT PANEL ==================== -->
+      <section id="panel-STUDENT" class="panel-view hidden space-y-6">
+        <!-- Student Sub-Navigation -->
+        <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-2xs">
+          <div class="flex items-center gap-2">
+            <button onclick="setStudentTab('menu')" id="stuTab-menu" class="px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+              <i data-lucide="utensils-crossed" class="w-4 h-4"></i> Today's Menu
+            </button>
+            <button onclick="setStudentTab('orders')" id="stuTab-orders" class="px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+              <i data-lucide="qr-code" class="w-4 h-4"></i> My Orders & Pickup QRs
+              <span id="stuActiveOrderPill" class="px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-800 font-extrabold">0</span>
+            </button>
+          </div>
+          <div class="flex items-center gap-2 text-xs bg-amber-50 text-amber-900 border border-amber-200 px-3.5 py-1.5 rounded-xl font-medium">
+            <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-600"></i>
+            Self-Cancellation Window: <strong id="stuCancelWindowText">5 mins</strong> before prep
+          </div>
+        </div>
+
+        <!-- Student View 1: Arranged Food Menu & Pre-Order Cart -->
+        <div id="studentView-menu" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Menu Column -->
+          <div class="lg:col-span-2 space-y-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+              <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+                <input type="text" id="menuSearchInput" oninput="renderStudentMenu()" placeholder="Search masala dosa, paneer wrap, cold coffee..."
+                  class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+              <div id="categoryFilterBar" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+            </div>
+
+            <div id="studentMenuGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+          </div>
+
+          <!-- Cart & Razorpay Checkout Column -->
+          <div class="lg:col-span-1">
+            <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sticky top-24 space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                  </div>
+                  <h2 class="font-extrabold text-slate-900 text-base">Pre-Order Tray</h2>
+                </div>
+                <button onclick="clearCart()" class="text-xs font-semibold text-rose-600 hover:underline">Clear Tray</button>
+              </div>
+
+              <div id="cartItemsContainer" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
+
+              <div class="border-t border-slate-100 pt-3 space-y-2 text-sm">
+                <div class="flex justify-between text-slate-600">
+                  <span>Item Subtotal</span>
+                  <span id="cartSubtotal" class="font-semibold">₹0.00</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                  <span>College GST (<span id="cartGstRate">5</span>%)</span>
+                  <span id="cartTax" class="font-semibold">₹0.00</span>
+                </div>
+                <div class="flex justify-between font-extrabold text-base text-slate-900 pt-2 border-t border-dashed border-slate-200">
+                  <span>Total Payable</span>
+                  <span id="cartTotal" class="text-amber-700">₹0.00</span>
+                </div>
+              </div>
+
+              <button onclick="initiateRazorpayCheckout()" id="checkoutBtn" disabled
+                class="w-full py-3.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold text-sm shadow-sm transition flex items-center justify-center gap-2">
+                <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
+                <span>Pay Securely via Razorpay</span>
+              </button>
+              <p class="text-[11px] text-center text-slate-400">
+                HMAC-SHA256 Verified Payment • Instant Single-Use Pickup QR
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student View 2: Live Order Tracking & Pickup QRs -->
+        <div id="studentView-orders" class="hidden">
+          <div id="studentOrdersList" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+        </div>
+      </section>
+
+      <!-- ==================== PANEL B: CANTEEN STAFF / MANAGER PANEL ==================== -->
+      <section id="panel-STAFF" class="panel-view hidden space-y-6">
+        <!-- Staff Sub-Navigation -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-2xs">
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="setStaffTab('queue')" id="staffTab-queue" class="px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+              <i data-lucide="flame" class="w-4 h-4"></i> Live Kitchen Queue
+            </button>
+            <button onclick="setStaffTab('scanner')" id="staffTab-scanner" class="px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+              <i data-lucide="scan-line" class="w-4 h-4"></i> QR Pickup Verification
+            </button>
+            <button onclick="setStaffTab('menuManage')" id="staffTab-menuManage" class="px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> Menu & Add Food (With Images)
+            </button>
+          </div>
+          <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+            <i data-lucide="database" class="w-3.5 h-3.5 inline mr-1"></i> Auto-Saved to Browser Storage
+          </span>
+        </div>
+
+        <!-- Staff View 1: Live Kitchen Queue -->
+        <div id="staffView-queue" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 shadow-2xs">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> New Paid Orders
+              </h3>
+              <span id="count-PAID" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700">0</span>
+            </div>
+            <div id="staffCol-PAID" class="space-y-3 min-h-[260px]"></div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 shadow-2xs">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Preparing in Kitchen
+              </h3>
+              <span id="count-PREPARING" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700">0</span>
+            </div>
+            <div id="staffCol-PREPARING" class="space-y-3 min-h-[260px]"></div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 shadow-2xs">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Ready for Pickup
+              </h3>
+              <span id="count-READY" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700">0</span>
+            </div>
+            <div id="staffCol-READY" class="space-y-3 min-h-[260px]"></div>
+          </div>
+        </div>
+
+        <!-- Staff View 2: Counter QR Verification Scanner -->
+        <div id="staffView-scanner" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-2xs">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <i data-lucide="qr-code" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <h3 class="font-extrabold text-slate-900">Counter QR Token Verification</h3>
+                <p class="text-xs text-slate-500">Scan or paste the student's QR code token to complete handover</p>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">QR Pickup Token</label>
+              <div class="flex gap-2">
+                <input type="text" id="qrVerifyInput" placeholder="e.g., QR-KIET-1001-A91C"
+                  class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                <button onclick="verifyQrToken()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition flex items-center gap-2">
+                  <i data-lucide="check-circle-2" class="w-4 h-4"></i> Verify
+                </button>
+              </div>
+            </div>
+
+            <div id="qrVerifyResult" class="hidden p-4 rounded-xl border text-sm"></div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-2xs">
+            <h3 class="font-extrabold text-slate-900 text-sm">Active Orders Ready for Quick Scan</h3>
+            <div id="quickScanList" class="space-y-2.5"></div>
+          </div>
+        </div>
+
+        <!-- Staff View 3: Add New Food Items (With Image URL or Device Upload) & Live Stock -->
+        <div id="staffView-menuManage" class="hidden space-y-6">
+          <!-- Add New Food Item Card -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+              <div>
+                <h3 class="font-extrabold text-slate-900 text-base">Add New Food Item to Canteen Menu</h3>
+                <p class="text-xs text-slate-500">Upload a photo from your device or paste an image URL. Immediately visible to all students.</p>
+              </div>
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                Staff Menu Publisher
+              </span>
+            </div>
+
+            <form onsubmit="handleStaffAddFoodItem(event)" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <!-- Form Inputs (2 cols) -->
+              <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Food Item Name *</label>
+                  <input type="text" id="staffFoodName" required placeholder="e.g., Schezwan Fried Rice"
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Category *</label>
+                  <select id="staffFoodCategory" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Meals">Meals</option>
+                    <option value="Snacks">Snacks</option>
+                    <option value="Beverages">Beverages</option>
+                    <option value="Desserts">Desserts</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Price (₹) *</label>
+                  <input type="number" id="staffFoodPrice" required min="1" step="1" placeholder="e.g., 75"
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Initial Stock Portions *</label>
+                  <input type="number" id="staffFoodStock" required min="1" step="1" placeholder="e.g., 25"
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Dietary Tag *</label>
+                  <select id="staffFoodVeg" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    <option value="VEG">Pure Veg</option>
+                    <option value="NON_VEG">Non-Veg</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Image URL (Optional if uploading file)</label>
+                  <input type="url" id="staffFoodImageUrl" oninput="previewFoodImageFromUrl(this.value)" placeholder="https://images.unsplash.com/..."
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Or Upload Food Image from Device</label>
+                  <input type="file" id="staffFoodImageFile" accept="image/*" onchange="handleFoodImageUpload(event)"
+                    class="w-full text-xs text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-100 file:text-amber-900 hover:file:bg-amber-200 border border-slate-200 rounded-xl p-1.5" />
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Short Description</label>
+                  <input type="text" id="staffFoodDesc" placeholder="Freshly tossed wok rice with crunchy veggies & spicy schezwan sauce."
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                </div>
+              </div>
+
+              <!-- Live Image Preview & Publish Action (1 col) -->
+              <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4 flex flex-col justify-between space-y-4">
+                <div class="space-y-2">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Live Menu Card Preview</span>
+                  <div class="aspect-video w-full rounded-xl overflow-hidden bg-slate-200 border border-slate-300 relative">
+                    <img id="staffFoodPreviewImg"
+                      src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80"
+                      alt="Food Preview" class="w-full h-full object-cover" />
+                  </div>
+                </div>
+
+                <button type="submit"
+                  class="w-full py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-sm transition flex items-center justify-center gap-2">
+                  <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                  <span>Publish Item to Menu</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Live Inventory & Stock Table -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+            <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h3 class="font-extrabold text-slate-900">Current Menu Items & Live Stock</h3>
+                <p class="text-xs text-slate-500">Adjust available portions or toggle Out-of-Stock in real time.</p>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500">
+                    <th class="py-3 px-4">Food Item</th>
+                    <th class="py-3 px-4">Category</th>
+                    <th class="py-3 px-4">Price</th>
+                    <th class="py-3 px-4">Stock Count</th>
+                    <th class="py-3 px-4">Status</th>
+                    <th class="py-3 px-4 text-right">Quick Toggle</th>
+                  </tr>
+                </thead>
+                <tbody id="staffInventoryTable" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== PANEL C: HIDDEN COLLEGE ADMIN PANEL (UNLOCKED VIA CTRL+SHIFT+F) ==================== -->
+      <section id="panel-COLLEGE_ADMIN" class="panel-view hidden space-y-6">
+        <div class="bg-slate-900 text-white rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-md">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center">
+              <i data-lucide="shield-alert" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h2 class="font-extrabold text-sm sm:text-base">College Authority Control Center</h2>
+              <p class="text-xs text-slate-400">Highest Privilege Mode • Unlocked via <kbd class="px-1.5 py-0.5 bg-slate-800 rounded text-amber-400 font-mono">Ctrl+Shift+F</kbd></p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="exportFinancialCSV()" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold flex items-center gap-1.5 transition">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Financial CSV
+            </button>
+            <button onclick="lockAndExitAdmin()" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 transition">
+              <i data-lucide="lock" class="w-3.5 h-3.5"></i> Lock & Hide Panel
+            </button>
+          </div>
+        </div>
+
+        <!-- Admin Sub-Navigation -->
+        <div class="flex flex-wrap items-center gap-2 bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs">
+          <button onclick="setAdminTab('overview')" id="adminTab-overview" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5">
+            <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Analytics & Reports
+          </button>
+          <button onclick="setAdminTab('menu')" id="adminTab-menu" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5">
+            <i data-lucide="utensils" class="w-4 h-4"></i> Full Menu & Pricing
+          </button>
+          <button onclick="setAdminTab('orders')" id="adminTab-orders" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5">
+            <i data-lucide="receipt" class="w-4 h-4"></i> Master Orders & Refunds
+          </button>
+          <button onclick="setAdminTab('users')" id="adminTab-users" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5">
+            <i data-lucide="users" class="w-4 h-4"></i> Accounts & Passwords
+          </button>
+          <button onclick="setAdminTab('settings')" id="adminTab-settings" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5">
+            <i data-lucide="settings" class="w-4 h-4"></i> College & Admin Settings
+          </button>
+        </div>
+
+        <!-- Admin View 1: Analytics & Reports -->
+        <div id="adminView-overview" class="space-y-6">
+          <div id="adminKpiGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
+              <h3 class="font-extrabold text-slate-900 text-sm">Revenue Breakdown by Category</h3>
+              <div id="categorySalesChart" class="space-y-3"></div>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
+              <h3 class="font-extrabold text-slate-900 text-sm">Inventory Low-Stock Watchlist</h3>
+              <div id="adminAlertsList" class="space-y-2.5"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin View 2: Full Menu & Pricing Control -->
+        <div id="adminView-menu" class="hidden bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+          <div class="p-4 border-b border-slate-200">
+            <h3 class="font-extrabold text-slate-900">College Admin Menu & Pricing Authority</h3>
+            <p class="text-xs text-slate-500">Edit prices, stock levels, availability, or delete items from the single-college menu.</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500">
+                  <th class="py-3 px-4">Item</th>
+                  <th class="py-3 px-4">Category</th>
+                  <th class="py-3 px-4">Price (₹)</th>
+                  <th class="py-3 px-4">Stock</th>
+                  <th class="py-3 px-4">Visibility</th>
+                  <th class="py-3 px-4 text-right">Delete</th>
+                </tr>
+              </thead>
+              <tbody id="adminMenuTable" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Admin View 3: Master Orders & Force Refund -->
+        <div id="adminView-orders" class="hidden bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+          <div class="p-4 border-b border-slate-200">
+            <h3 class="font-extrabold text-slate-900">Master Order Ledger & Force-Refund Controls</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500">
+                  <th class="py-3 px-4">Order & QR</th>
+                  <th class="py-3 px-4">Student</th>
+                  <th class="py-3 px-4">Items</th>
+                  <th class="py-3 px-4">Total & Payment ID</th>
+                  <th class="py-3 px-4">Status</th>
+                  <th class="py-3 px-4 text-right">Admin Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminOrdersTable" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Admin View 4: User Accounts Management -->
+        <div id="adminView-users" class="hidden space-y-4">
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
+            <h3 class="font-extrabold text-slate-900 text-sm mb-3">Create Student or Canteen Staff Account</h3>
+            <form onsubmit="handleAdminAddUser(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <input type="text" id="admNewUserName" required placeholder="Full Name" class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
+              <input type="email" id="admNewUserEmail" required placeholder="College Email" class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
+              <input type="text" id="admNewUserPass" required placeholder="Password" class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
+              <select id="admNewUserRole" class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm bg-white">
+                <option value="STUDENT">Student</option>
+                <option value="STAFF">Canteen Staff / Manager</option>
+              </select>
+              <button type="submit" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition">
+                + Add Account
+              </button>
+            </form>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500">
+                    <th class="py-3 px-4">Name</th>
+                    <th class="py-3 px-4">Email</th>
+                    <th class="py-3 px-4">Role</th>
+                    <th class="py-3 px-4">Status</th>
+                    <th class="py-3 px-4 text-right">Control</th>
+                  </tr>
+                </thead>
+                <tbody id="adminUsersTable" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin View 5: College Settings, Cancellation Policy & Admin Credentials -->
+        <div id="adminView-settings" class="hidden max-w-3xl bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-5">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="font-extrabold text-slate-900 text-base">Single-College Configuration & Admin Security</h3>
+              <p class="text-xs text-slate-500">All settings are saved persistently in local browser storage.</p>
+            </div>
+            <button type="button" onclick="resetDemoDatabase()" class="px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold">
+              Reset Default Data
+            </button>
+          </div>
+
+          <form onsubmit="handleSaveCollegeSettings(event)" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">College Name</label>
+                <input type="text" id="setCollegeName" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Canteen Hours</label>
+                <input type="text" id="setOperatingHours" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">GST Rate (%)</label>
+                <input type="number" id="setGstPercent" min="0" max="28" step="0.5" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Student Self-Cancellation Window (Mins)</label>
+                <input type="number" id="setCancelWindow" min="0" max="60" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">College Admin Login Email (Ctrl+Shift+F)</label>
+                <input type="email" id="setAdminEmail" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-mono" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">College Admin Login Password</label>
+                <input type="text" id="setAdminPassword" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-mono" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 mb-1">College Razorpay Key ID</label>
+                <input type="text" id="setRazorpayKey" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-mono" />
+              </div>
+            </div>
+            <div class="pt-2 flex justify-end">
+              <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition">
+                Save Configuration
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ==================== SECRET COLLEGE ADMIN UNLOCK MODAL (CTRL + SHIFT + F) ==================== -->
+  <div id="secretAdminModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-slate-900 text-white rounded-3xl max-w-md w-full p-7 border border-slate-800 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">Restricted College Access</span>
+            <h3 class="font-extrabold text-lg text-white">College Admin Verification</h3>
+          </div>
+        </div>
+        <button onclick="closeSecretAdminModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-400 leading-relaxed">
+        Enter authorized College Administration credentials to unlock the master management console.
+      </p>
+
+      <form onsubmit="handleSecretAdminLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">College Admin Email</label>
+          <input type="email" id="secretAdminEmailInput" required placeholder="admin@kiet.edu.in"
+            class="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">Admin Security Password</label>
+          <input type="password" id="secretAdminPassInput" required placeholder="••••••••"
+            class="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+        </div>
+
+        <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-3 flex items-center justify-between">
+          <span class="text-[11px] font-mono text-slate-400">Default: admin@kiet.edu.in / admin123</span>
+          <button type="button" onclick="fillSecretAdminDemo()" class="text-[11px] font-bold text-amber-400 hover:underline">
+            Auto-Fill
+          </button>
+        </div>
+
+        <button type="submit"
+          class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm transition flex items-center justify-center gap-2">
+          <i data-lucide="unlock" class="w-4 h-4"></i>
+          <span>Unlock College Admin Panel</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== RAZORPAY CHECKOUT MODAL ==================== -->
+  <div id="razorpayModal" class="hidden fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-200">
+      <div class="bg-slate-900 text-white p-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-extrabold text-lg">R</div>
+          <div>
+            <p class="text-[11px] text-amber-400 uppercase tracking-wider font-bold">Razorpay Secure Checkout</p>
+            <h3 id="rzpMerchantTitle" class="font-bold text-sm">KIET Engineering Technology Canteen</h3>
+          </div>
+        </div>
+        <button onclick="closeRazorpayModal()" class="text-white/70 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500">Razorpay Order ID</p>
+            <p id="rzpOrderIdDisplay" class="font-mono text-xs font-bold text-slate-800">order_Rzp98123</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs text-slate-500">Amount Payable</p>
+            <p id="rzpAmountDisplay" class="text-xl font-extrabold text-amber-700">₹0.00</p>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-slate-700">Choose Payment Method</label>
+          <div class="grid grid-cols-2 gap-2.5">
+            <label class="flex items-center gap-2 p-3 rounded-xl border-2 border-amber-500 bg-amber-50/50 cursor-pointer text-xs font-bold text-slate-900">
+              <input type="radio" name="rzpMethod" value="UPI" checked class="accent-amber-600" />
+              <span>UPI / GPay / PhonePe</span>
+            </label>
+            <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs font-bold text-slate-800">
+              <input type="radio" name="rzpMethod" value="CARD" class="accent-amber-600" />
+              <span>Debit / Credit Card</span>
+            </label>
+          </div>
+        </div>
+
+        <button onclick="completeRazorpayPayment()"
+          class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm shadow-sm transition flex items-center justify-center gap-2">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>Authorize & Complete Payment</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== NOTIFICATION DRAWER ==================== -->
+  <div id="notificationDrawer" class="hidden fixed inset-0 z-50 bg-slate-900/40 flex justify-end">
+    <div class="bg-white w-full max-w-sm h-full shadow-2xl border-l border-slate-200 flex flex-col">
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="bell" class="w-5 h-5 text-amber-600"></i>
+          <h3 class="font-extrabold text-slate-900">Live Campus Notifications</h3>
+        </div>
+        <button onclick="toggleNotificationDrawer()" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="notificationList" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm w-full pointer-events-none"></div>
+
+  <script>
+    // =========================================================================
+    // 1. LOCALSTORAGE PERSISTENCE ENGINE (SINGLE-COLLEGE DATABASE)
+    // =========================================================================
+    const STORAGE_KEY = 'CAMPUSBITE_SINGLE_COLLEGE_DB_V1';
+
+    const DEFAULT_STATE = {
+      settings: {
+        collegeName: "KIET Engineering Technology",
+        operatingHours: "08:00 AM – 08:30 PM",
+        gstPercent: 5,
+        cancellationWindowMins: 5,
+        razorpayKeyId: "rzp_live_KIET8921",
+        adminEmail: "admin@kiet.edu.in",
+        adminPassword: "admin123"
+      },
+      users: [
+        { id: 'U-101', name: 'Aarav Sharma', identifier: '2024CS042', email: 'aarav@kiet.edu.in', password: 'student123', role: 'STUDENT', active: true },
+        { id: 'U-102', name: 'Priya Nair', identifier: '2024EC019', email: 'priya@kiet.edu.in', password: 'student123', role: 'STUDENT', active: true },
+        { id: 'U-201', name: 'Ramesh Verma', identifier: 'STF-01', email: 'staff@kiet.edu.in', password: 'staff123', role: 'STAFF', active: true }
+      ],
+      menu: [
+        {
+          id: 'M-1',
+          name: 'Crispy Masala Dosa',
+          category: 'Breakfast',
+          price: 65,
+          stock: 24,
+          available: true,
+          veg: 'VEG',
+          image: 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=700&q=80',
+          desc: 'Golden fermented crepe stuffed with spiced potato masala, coconut chutney & hot sambar.'
+        },
+        {
+          id: 'M-2',
+          name: 'Paneer Tikka Grilled Wrap',
+          category: 'Snacks',
+          price: 85,
+          stock: 16,
+          available: true,
+          veg: 'VEG',
+          image: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=700&q=80',
+          desc: 'Smoky tandoori cottage cheese cubes, mint chutney & crunchy veggies in a toasted wrap.'
+        },
+        {
+          id: 'M-3',
+          name: 'Campus Deluxe Veg Thali',
+          category: 'Meals',
+          price: 110,
+          stock: 18,
+          available: true,
+          veg: 'VEG',
+          image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=700&q=80',
+          desc: '2 Butter Rotis, Dal Tadka, Paneer Makhani, Jeera Rice, Papad & Gulab Jamun.'
+        },
+        {
+          id: 'M-4',
+          name: 'Classic Cold Coffee & Scoop',
+          category: 'Beverages',
+          price: 60,
+          stock: 30,
+          available: true,
+          veg: 'VEG',
+          image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=700&q=80',
+          desc: 'Chilled blended Arabica cold coffee crowned with vanilla ice cream & chocolate drizzle.'
+        },
+        {
+          id: 'M-5',
+          name: 'Spiced Chicken Kathi Roll',
+          category: 'Snacks',
+          price: 95,
+          stock: 12,
+          available: true,
+          veg: 'NON_VEG',
+          image: 'https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=700&q=80',
+          desc: 'Char-grilled spiced chicken tikka, pickled onions & zesty green chutney in flaky paratha.'
+        },
+        {
+          id: 'M-6',
+          name: 'Kulhad Masala Chai',
+          category: 'Beverages',
+          price: 20,
+          stock: 50,
+          available: true,
+          veg: 'VEG',
+          image: 'https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&w=700&q=80',
+          desc: 'Freshly brewed ginger-cardamom tea served piping hot in a traditional clay kulhad.'
+        }
+      ],
+      orders: [
+        {
+          id: 'ORD-1001',
+          userId: 'U-101',
+          studentName: 'Aarav Sharma (2024CS042)',
+          items: [
+            { menuId: 'M-1', name: 'Crispy Masala Dosa', qty: 1, price: 65 },
+            { menuId: 'M-6', name: 'Kulhad Masala Chai', qty: 1, price: 20 }
+          ],
+          subtotal: 85,
+          tax: 4.25,
+          total: 89.25,
+          status: 'READY',
+          qrToken: 'QR-KIET-1001-A91C',
+          qrUsed: false,
+          razorpayOrderId: 'order_Rzp77101',
+          razorpayPaymentId: 'pay_Rzp99201',
+          refundId: null,
+          createdAt: Date.now() - 10 * 60 * 1000
+        }
+      ],
+      notifications: [
+        { id: 'N-1', title: 'Order #ORD-1001 Ready for Pickup!', message: 'Present QR-KIET-1001-A91C at Counter 1.', time: 'Just now', unread: true }
+      ]
+    };
+
+    let db = loadDatabase();
+    let session = {
+      isAuthenticated: false,
+      role: null, // 'STUDENT' | 'STAFF' | 'COLLEGE_ADMIN'
+      user: null,
+      previousSession: null
+    };
+
+    // UI transient state
+    let authPortalRole = 'STUDENT';
+    let authIsRegister = false;
+    let activeStudentTab = 'menu';
+    let activeStaffTab = 'queue';
+    let activeAdminTab = 'overview';
+    let selectedCategory = 'All';
+    let cart = [];
+    let pendingRazorpayOrder = null;
+    let uploadedFoodBase64 = '';
+
+    function loadDatabase() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          let serialized = JSON.stringify(parsed);
+          let migrated = false;
+          [
+            ["St. Xavier's Institute of Technology", "KIET Engineering Technology"],
+            ["St. Xavier's Canteen", "KIET Engineering Technology Canteen"],
+            ["SXIT", "KIET"],
+            ["sxit", "kiet"]
+          ].forEach(([legacy, current]) => {
+            if (serialized.includes(legacy)) {
+              serialized = serialized.split(legacy).join(current);
+              migrated = true;
+            }
+          });
+          const migratedDb = JSON.parse(serialized);
+          if (migrated) saveDatabase(migratedDb);
+          return migratedDb;
+        }
+      } catch (e) {
+        console.error('Failed to read localStorage:', e);
+      }
+      const fresh = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      saveDatabase(fresh);
+      return fresh;
+    }
+
+    function saveDatabase(data = db) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        showToast('Storage quota warning: Image may be too large for localStorage.', 'warning');
+      }
+    }
+
+    // Restore saved user session if present
+    function restoreSession() {
+      try {
+        const savedSession = localStorage.getItem(STORAGE_KEY + '_SESSION');
+        if (savedSession) {
+          const parsed = JSON.parse(savedSession);
+          if (parsed && parsed.isAuthenticated && parsed.role !== 'COLLEGE_ADMIN') {
+            const validUser = db.users.find(u => u.id === parsed.user?.id && u.active);
+            if (validUser) {
+              session = { isAuthenticated: true, role: validUser.role, user: validUser, previousSession: null };
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
+    function persistSession() {
+      if (session.isAuthenticated && session.role !== 'COLLEGE_ADMIN') {
+        localStorage.setItem(STORAGE_KEY + '_SESSION', JSON.stringify(session));
+      } else {
+        localStorage.removeItem(STORAGE_KEY + '_SESSION');
+      }
+    }
+
+    // =========================================================================
+    // 2. SECRET KEYBOARD SHORTCUT FOR HIDDEN COLLEGE ADMIN (CTRL + SHIFT + F)
+    // =========================================================================
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'F' || e.key === 'f')) {
+        e.preventDefault();
+        openSecretAdminModal();
+      }
+    });
+
+    function openSecretAdminModal() {
+      document.getElementById('secretAdminEmailInput').value = '';
+      document.getElementById('secretAdminPassInput').value = '';
+      document.getElementById('secretAdminModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('secretAdminEmailInput').focus(), 50);
+      lucide.createIcons();
+    }
+
+    function closeSecretAdminModal() {
+      document.getElementById('secretAdminModal').classList.add('hidden');
+    }
+
+    function fillSecretAdminDemo() {
+      document.getElementById('secretAdminEmailInput').value = db.settings.adminEmail;
+      document.getElementById('secretAdminPassInput').value = db.settings.adminPassword;
+    }
+
+    function handleSecretAdminLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('secretAdminEmailInput').value.trim().toLowerCase();
+      const pass = document.getElementById('secretAdminPassInput').value;
+
+      if (email === db.settings.adminEmail.toLowerCase() && pass === db.settings.adminPassword) {
+        if (session.isAuthenticated && session.role !== 'COLLEGE_ADMIN') {
+          session.previousSession = { role: session.role, user: session.user };
+        }
+        session.isAuthenticated = true;
+        session.role = 'COLLEGE_ADMIN';
+        session.user = { id: 'ADMIN-01', name: 'College Authority Admin', email: db.settings.adminEmail, role: 'COLLEGE_ADMIN' };
+        closeSecretAdminModal();
+        showToast('College Admin Console Unlocked.', 'success');
+        renderApp();
+      } else {
+        showToast('Invalid College Admin email or security password.', 'error');
+      }
+    }
+
+    function lockAndExitAdmin() {
+      if (session.previousSession) {
+        session.role = session.previousSession.role;
+        session.user = session.previousSession.user;
+        session.previousSession = null;
+        showToast('College Admin panel locked & hidden.', 'info');
+      } else {
+        session = { isAuthenticated: false, role: null, user: null, previousSession: null };
+        showToast('College Admin locked. Signed out.', 'info');
+      }
+      renderApp();
+    }
+
+    // =========================================================================
+    // 3. STUDENT & CANTEEN STAFF LOGIN / REGISTRATION
+    // =========================================================================
+    function setAuthRole(role) {
+      authPortalRole = role;
+      const stuBtn = document.getElementById('authRoleBtn-STUDENT');
+      const stfBtn = document.getElementById('authRoleBtn-STAFF');
+
+      if (role === 'STUDENT') {
+        stuBtn.className = 'py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 bg-white text-slate-900 shadow-xs';
+        stfBtn.className = 'py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900';
+        document.getElementById('authEmail').placeholder = 'aarav@kiet.edu.in';
+        document.getElementById('authIdLabel').textContent = 'College Roll Number';
+        document.getElementById('authIdentifier').placeholder = 'e.g., 2024CS108';
+        document.getElementById('demoHintText').textContent = 'aarav@kiet.edu.in / student123';
+      } else {
+        stfBtn.className = 'py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 bg-white text-slate-900 shadow-xs';
+        stuBtn.className = 'py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900';
+        document.getElementById('authEmail').placeholder = 'staff@kiet.edu.in';
+        document.getElementById('authIdLabel').textContent = 'Canteen Staff Employee ID';
+        document.getElementById('authIdentifier').placeholder = 'e.g., STF-04';
+        document.getElementById('demoHintText').textContent = 'staff@kiet.edu.in / staff123';
+      }
+      updateAuthFormLabels();
+    }
+
+    function toggleAuthMode() {
+      authIsRegister = !authIsRegister;
+      updateAuthFormLabels();
+    }
+
+    function updateAuthFormLabels() {
+      const roleTitle = authPortalRole === 'STUDENT' ? 'Student' : 'Canteen Staff';
+      const regFields = document.getElementById('authRegisterFields');
+      if (authIsRegister) {
+        regFields.classList.remove('hidden');
+        document.getElementById('authFormTitle').textContent = `Register ${roleTitle} Account`;
+        document.getElementById('authFormSubtitle').textContent = 'Details are securely saved in your Chrome browser';
+        document.getElementById('authModeToggleBtn').textContent = 'Back to Sign In';
+        document.getElementById('authSubmitBtn').innerHTML = `<span>Create ${roleTitle} Account</span><i data-lucide="user-plus" class="w-4 h-4"></i>`;
+      } else {
+        regFields.classList.add('hidden');
+        document.getElementById('authFormTitle').textContent = `${roleTitle} Sign In`;
+        document.getElementById('authFormSubtitle').textContent = 'Access your single-college canteen workspace';
+        document.getElementById('authModeToggleBtn').textContent = 'Create Account';
+        document.getElementById('authSubmitBtn').innerHTML = `<span>Sign In to Canteen</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+      }
+      lucide.createIcons();
+    }
+
+    function fillDemoCredentials() {
+      if (authIsRegister) toggleAuthMode();
+      if (authPortalRole === 'STUDENT') {
+        document.getElementById('authEmail').value = 'aarav@kiet.edu.in';
+        document.getElementById('authPassword').value = 'student123';
+      } else {
+        document.getElementById('authEmail').value = 'staff@kiet.edu.in';
+        document.getElementById('authPassword').value = 'staff123';
+      }
+      handleAuthSubmit(new Event('submit'));
+    }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value.trim().toLowerCase();
+      const password = document.getElementById('authPassword').value;
+
+      if (authIsRegister) {
+        const name = document.getElementById('authName').value.trim();
+        const identifier = document.getElementById('authIdentifier').value.trim() || 'ID-' + Math.floor(100 + Math.random() * 900);
+        if (!name) {
+          showToast('Please enter your full name.', 'warning');
+          return;
+        }
+        if (db.users.some(u => u.email.toLowerCase() === email)) {
+          showToast('An account with this email already exists. Please Sign In.', 'error');
+          return;
+        }
+        const newUser = {
+          id: 'U-' + Date.now(),
+          name,
+          identifier,
+          email,
+          password,
+          role: authPortalRole,
+          active: true
+        };
+        db.users.push(newUser);
+        saveDatabase();
+
+        session = { isAuthenticated: true, role: newUser.role, user: newUser, previousSession: null };
+        persistSession();
+        showToast(`Welcome, ${newUser.name}! Account saved locally.`, 'success');
+        renderApp();
+      } else {
+        const user = db.users.find(u => u.email.toLowerCase() === email && u.password === password && u.role === authPortalRole);
+        if (!user) {
+          showToast(`Invalid ${authPortalRole === 'STUDENT' ? 'Student' : 'Canteen Staff'} email or password.`, 'error');
+          return;
+        }
+        if (!user.active) {
+          showToast('Your account has been suspended by the College Admin.', 'error');
+          return;
+        }
+        session = { isAuthenticated: true, role: user.role, user, previousSession: null };
+        persistSession();
+        showToast(`Signed in as ${user.name}`, 'success');
+        renderApp();
+      }
+    }
+
+    function logoutUser() {
+      session = { isAuthenticated: false, role: null, user: null, previousSession: null };
+      persistSession();
+      cart = [];
+      showToast('Signed out safely.', 'info');
+      renderApp();
+    }
+
+    // =========================================================================
+    // 4. MASTER APPLICATION RENDERER
+    // =========================================================================
+    window.onload = function () {
+      restoreSession();
+      renderApp();
+    };
+
+    function renderApp() {
+      document.getElementById('authCollegeName').textContent = db.settings.collegeName;
+      document.getElementById('authHoursLabel').textContent = db.settings.operatingHours;
+
+      const authPortal = document.getElementById('authPortal');
+      const appWorkspace = document.getElementById('appWorkspace');
+
+      if (!session.isAuthenticated) {
+        authPortal.classList.remove('hidden');
+        appWorkspace.classList.add('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      authPortal.classList.add('hidden');
+      appWorkspace.classList.remove('hidden');
+
+      // Update Header Info
+      document.getElementById('headerCollegeName').textContent = db.settings.collegeName;
+      document.getElementById('headerCanteenSubtitle').textContent = `Central Canteen • ${db.settings.operatingHours}`;
+      document.getElementById('activeUserNameDisplay').textContent = session.user.name;
+      document.getElementById('activeUserEmailDisplay').textContent = session.user.email;
+      document.getElementById('userAvatarInitial').textContent = session.user.name.charAt(0).toUpperCase();
+
+      const badge = document.getElementById('roleHeaderBadge');
+      const exitAdminBtn = document.getElementById('exitAdminBtn');
+      if (session.role === 'STUDENT') {
+        badge.textContent = 'Student Portal';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-200';
+        exitAdminBtn.classList.add('hidden');
+      } else if (session.role === 'STAFF') {
+        badge.textContent = 'Canteen Staff & Kitchen';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-200';
+        exitAdminBtn.classList.add('hidden');
+      } else {
+        badge.textContent = 'College Admin (Unlocked)';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-900 border border-rose-200';
+        exitAdminBtn.classList.remove('hidden');
+      }
+
+      // Show ONLY active role panel
+      ['STUDENT', 'STAFF', 'COLLEGE_ADMIN'].forEach(r => {
+        const el = document.getElementById(`panel-${r}`);
+        if (r === session.role) el.classList.remove('hidden');
+        else el.classList.add('hidden');
+      });
+
+      if (session.role === 'STUDENT') renderStudentPanel();
+      if (session.role === 'STAFF') renderStaffPanel();
+      if (session.role === 'COLLEGE_ADMIN') renderAdminPanel();
+
+      renderNotifications();
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 5. STUDENT PANEL LOGIC
+    // =========================================================================
+    function setStudentTab(tab) {
+      activeStudentTab = tab;
+      renderStudentPanel();
+      lucide.createIcons();
+    }
+
+    function renderStudentPanel() {
+      ['menu', 'orders'].forEach(t => {
+        const btn = document.getElementById(`stuTab-${t}`);
+        const view = document.getElementById(`studentView-${t}`);
+        if (t === activeStudentTab) {
+          btn.className = 'px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2 bg-slate-900 text-white shadow-2xs';
+          view.classList.remove('hidden');
+        } else {
+          btn.className = 'px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2 text-slate-600 hover:bg-slate-100';
+          view.classList.add('hidden');
+        }
+      });
+
+      document.getElementById('stuCancelWindowText').textContent = `${db.settings.cancellationWindowMins} mins`;
+      document.getElementById('cartGstRate').textContent = db.settings.gstPercent;
+
+      renderCategoryPills();
+      renderStudentMenu();
+      renderCart();
+      renderStudentOrders();
+    }
+
+    function renderCategoryPills() {
+      const categories = ['All', 'Breakfast', 'Meals', 'Snacks', 'Beverages', 'Desserts'];
+      document.getElementById('categoryFilterBar').innerHTML = categories.map(cat => {
+        const active = selectedCategory === cat;
+        return `<button onclick="selectCategory('${cat}')"
+          class="px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
+            active ? 'bg-amber-600 text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }">${cat}</button>`;
+      }).join('');
+    }
+
+    function selectCategory(cat) {
+      selectedCategory = cat;
+      renderCategoryPills();
+      renderStudentMenu();
+    }
+
+    function renderStudentMenu() {
+      const q = (document.getElementById('menuSearchInput')?.value || '').toLowerCase();
+      const filtered = db.menu.filter(item => {
+        const matchCat = selectedCategory === 'All' || item.category === selectedCategory;
+        const matchQuery = item.name.toLowerCase().includes(q) || (item.desc || '').toLowerCase().includes(q);
+        return matchCat && matchQuery;
+      });
+
+      const grid = document.getElementById('studentMenuGrid');
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-full bg-white rounded-2xl border border-slate-200 p-10 text-center text-slate-500 text-sm">No food items match your search.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(item => {
+        const outOfStock = !item.available || item.stock <= 0;
+        const inCart = cart.find(c => c.menuId === item.id);
+        const fallbackImg = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80';
+
+        return `
+          <div class="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs hover:shadow-md hover:border-amber-300 transition flex flex-col justify-between ${outOfStock ? 'opacity-70' : ''}">
+            <div>
+              <div class="relative h-44 w-full bg-slate-100 overflow-hidden">
+                <img src="${item.image || fallbackImg}" onerror="this.src='${fallbackImg}'" alt="${item.name}"
+                  class="w-full h-full object-cover transition duration-300 hover:scale-105" />
+                <div class="absolute top-3 left-3 flex items-center gap-1.5">
+                  <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider bg-white/95 text-slate-900 shadow-2xs">
+                    ${item.category}
+                  </span>
+                  <span class="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-white/95 shadow-2xs flex items-center gap-1 ${item.veg === 'NON_VEG' ? 'text-rose-700' : 'text-emerald-700'}">
+                    <span class="w-2 h-2 rounded-full ${item.veg === 'NON_VEG' ? 'bg-rose-600' : 'bg-emerald-600'}"></span>
+                    ${item.veg === 'NON_VEG' ? 'Non-Veg' : 'Veg'}
+                  </span>
+                </div>
+                <div class="absolute bottom-3 right-3">
+                  ${outOfStock
+                    ? `<span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-rose-600 text-white shadow-sm">Sold Out</span>`
+                    : `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-900/85 text-amber-300 backdrop-blur-xs">${item.stock} portions left</span>`
+                  }
+                </div>
+              </div>
+
+              <div class="p-4 space-y-1.5">
+                <h3 class="font-extrabold text-slate-900 text-base leading-snug">${item.name}</h3>
+                <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">${item.desc || ''}</p>
+              </div>
+            </div>
+
+            <div class="px-4 pb-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-lg font-extrabold text-slate-900">₹${item.price}</span>
+              ${outOfStock ? `
+                <button disabled class="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-400 text-xs font-bold cursor-not-allowed">Unavailable</button>
+              ` : inCart ? `
+                <div class="flex items-center gap-2 bg-amber-50 border border-amber-300 rounded-xl px-2 py-1">
+                  <button onclick="updateCartQty('${item.id}', -1)" class="w-6 h-6 rounded-lg bg-white text-amber-900 font-extrabold shadow-2xs">-</button>
+                  <span class="text-xs font-extrabold text-amber-950 px-1">${inCart.qty}</span>
+                  <button onclick="updateCartQty('${item.id}', 1)" class="w-6 h-6 rounded-lg bg-amber-600 text-white font-extrabold shadow-2xs">+</button>
+                </div>
+              ` : `
+                <button onclick="addToCart('${item.id}')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-amber-600 text-white text-xs font-bold transition shadow-2xs">
+                  + Add to Tray
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addToCart(menuId) {
+      const item = db.menu.find(m => m.id === menuId);
+      if (!item || !item.available || item.stock <= 0) return;
+
+      const existing = cart.find(c => c.menuId === menuId);
+      if (existing) {
+        if (existing.qty >= item.stock) {
+          showToast(`Only ${item.stock} portions available right now.`, 'warning');
+          return;
+        }
+        existing.qty += 1;
+      } else {
+        cart.push({ menuId: item.id, name: item.name, price: item.price, qty: 1 });
+      }
+      renderStudentMenu();
+      renderCart();
+    }
+
+    function updateCartQty(menuId, delta) {
+      const idx = cart.findIndex(c => c.menuId === menuId);
+      if (idx === -1) return;
+      const item = db.menu.find(m => m.id === menuId);
+      const newQty = cart[idx].qty + delta;
+
+      if (newQty <= 0) {
+        cart.splice(idx, 1);
+      } else if (item && newQty > item.stock) {
+        showToast(`Maximum available stock (${item.stock}) reached.`, 'warning');
+        return;
+      } else {
+        cart[idx].qty = newQty;
+      }
+      renderStudentMenu();
+      renderCart();
+    }
+
+    function clearCart() {
+      cart = [];
+      renderStudentMenu();
+      renderCart();
+    }
+
+    function calculateCartTotals() {
+      const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+      const tax = +(subtotal * (db.settings.gstPercent / 100)).toFixed(2);
+      const total = +(subtotal + tax).toFixed(2);
+      return { subtotal, tax, total };
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cartItemsContainer');
+      const checkoutBtn = document.getElementById('checkoutBtn');
+      const { subtotal, tax, total } = calculateCartTotals();
+
+      document.getElementById('cartSubtotal').textContent = `₹${subtotal.toFixed(2)}`;
+      document.getElementById('cartTax').textContent = `₹${tax.toFixed(2)}`;
+      document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
+
+      if (cart.length === 0) {
+        container.innerHTML = `<div class="py-8 text-center text-xs text-slate-400">Your pre-order tray is empty.<br/>Select delicious items from the menu.</div>`;
+        checkoutBtn.disabled = true;
+        return;
+      }
+
+      checkoutBtn.disabled = false;
+      container.innerHTML = cart.map(c => `
+        <div class="flex items-center justify-between gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200/70">
+          <div class="min-w-0">
+            <p class="text-xs font-bold text-slate-900 truncate">${c.name}</p>
+            <p class="text-[11px] text-slate-500">₹${c.price} × ${c.qty}</p>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="updateCartQty('${c.menuId}', -1)" class="w-6 h-6 rounded-lg border border-slate-200 bg-white text-xs font-bold">-</button>
+            <span class="text-xs font-bold w-4 text-center">${c.qty}</span>
+            <button onclick="updateCartQty('${c.menuId}', 1)" class="w-6 h-6 rounded-lg border border-slate-200 bg-white text-xs font-bold">+</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function initiateRazorpayCheckout() {
+      if (cart.length === 0) return;
+      const { subtotal, tax, total } = calculateCartTotals();
+      const rzpOrderId = 'order_Rzp' + Math.floor(100000 + Math.random() * 900000);
+
+      pendingRazorpayOrder = {
+        rzpOrderId,
+        subtotal,
+        tax,
+        total,
+        items: JSON.parse(JSON.stringify(cart))
+      };
+
+      document.getElementById('rzpMerchantTitle').textContent = `${db.settings.collegeName} Canteen`;
+      document.getElementById('rzpOrderIdDisplay').textContent = rzpOrderId;
+      document.getElementById('rzpAmountDisplay').textContent = `₹${total.toFixed(2)}`;
+      document.getElementById('razorpayModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeRazorpayModal() {
+      document.getElementById('razorpayModal').classList.add('hidden');
+      pendingRazorpayOrder = null;
+    }
+
+    function completeRazorpayPayment() {
+      if (!pendingRazorpayOrder) return;
+
+      for (const cartItem of pendingRazorpayOrder.items) {
+        const menuItem = db.menu.find(m => m.id === cartItem.menuId);
+        if (!menuItem || !menuItem.available || menuItem.stock < cartItem.qty) {
+          showToast(`Stock changed for ${cartItem.name}. Please update your tray.`, 'error');
+          closeRazorpayModal();
+          return;
+        }
+      }
+      pendingRazorpayOrder.items.forEach(cartItem => {
+        const menuItem = db.menu.find(m => m.id === cartItem.menuId);
+        menuItem.stock -= cartItem.qty;
+        if (menuItem.stock === 0) menuItem.available = false;
+      });
+
+      const orderNum = 1001 + db.orders.length;
+      const orderId = `ORD-${orderNum}`;
+      const paymentId = 'pay_Rzp' + Math.floor(100000 + Math.random() * 900000);
+      const randomHex = Math.random().toString(16).substring(2, 6).toUpperCase();
+      const qrToken = `QR-KIET-${orderNum}-${randomHex}`;
+
+      const newOrder = {
+        id: orderId,
+        userId: session.user.id,
+        studentName: `${session.user.name} (${session.user.identifier || session.user.email})`,
+        items: pendingRazorpayOrder.items,
+        subtotal: pendingRazorpayOrder.subtotal,
+        tax: pendingRazorpayOrder.tax,
+        total: pendingRazorpayOrder.total,
+        status: 'PAID',
+        qrToken,
+        qrUsed: false,
+        razorpayOrderId: pendingRazorpayOrder.rzpOrderId,
+        razorpayPaymentId: paymentId,
+        refundId: null,
+        createdAt: Date.now()
+      };
+
+      db.orders.unshift(newOrder);
+      saveDatabase();
+      cart = [];
+      closeRazorpayModal();
+
+      pushNotification(`Payment Verified (${paymentId})`, `Order #${orderId} confirmed! Pickup QR ticket issued.`);
+      showToast(`Order #${orderId} placed! Stored locally.`, 'success');
+
+      activeStudentTab = 'orders';
+      renderApp();
+    }
+
+    function renderStudentOrders() {
+      const myOrders = db.orders.filter(o => o.userId === session.user.id);
+      const activeCount = myOrders.filter(o => ['PAID', 'PREPARING', 'READY'].includes(o.status)).length;
+      document.getElementById('stuActiveOrderPill').textContent = activeCount;
+
+      const container = document.getElementById('studentOrdersList');
+      if (myOrders.length === 0) {
+        container.innerHTML = `<div class="col-span-full bg-white rounded-2xl border border-slate-200 p-10 text-center text-slate-500 text-sm">You haven't placed any canteen orders yet.</div>`;
+        return;
+      }
+
+      container.innerHTML = myOrders.map(order => {
+        const minsElapsed = Math.floor((Date.now() - order.createdAt) / 60000);
+        const canSelfCancel = order.status === 'PAID' && minsElapsed <= db.settings.cancellationWindowMins;
+
+        const statusBadgeMap = {
+          PAID: 'bg-blue-50 text-blue-700 border-blue-200',
+          PREPARING: 'bg-amber-50 text-amber-800 border-amber-200',
+          READY: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+          COMPLETED: 'bg-slate-100 text-slate-700 border-slate-200',
+          CANCELLED: 'bg-rose-50 text-rose-700 border-rose-200'
+        };
+
+        return `
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-extrabold text-slate-900 text-base">#${order.id}</span>
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${statusBadgeMap[order.status]}">${order.status}</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 font-mono mt-0.5">${order.razorpayPaymentId} • ${minsElapsed}m ago</p>
+                </div>
+                <span class="font-extrabold text-amber-700 text-base">₹${order.total.toFixed(2)}</span>
+              </div>
+
+              <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-1">
+                ${order.items.map(it => `
+                  <div class="flex justify-between text-xs text-slate-700">
+                    <span><strong>${it.qty}×</strong> ${it.name}</span>
+                    <span class="font-semibold">₹${(it.price * it.qty).toFixed(2)}</span>
+                  </div>
+                `).join('')}
+              </div>
+
+              ${['PAID', 'PREPARING', 'READY'].includes(order.status) ? `
+                <div class="flex items-center gap-4 p-3 rounded-xl border border-dashed border-amber-400 bg-amber-50/50">
+                  <div id="qrcode-${order.id}" class="bg-white p-1.5 rounded-lg border border-slate-200 shrink-0"></div>
+                  <div class="min-w-0 space-y-1">
+                    <p class="text-[11px] font-extrabold uppercase tracking-wider text-amber-900">Single-Use Counter QR</p>
+                    <p class="font-mono text-xs font-bold text-slate-900 truncate">${order.qrToken}</p>
+                    <p class="text-[11px] text-slate-600">Show this QR at the counter when order turns <strong>READY</strong>.</p>
+                  </div>
+                </div>
+              ` : ''}
+
+              ${order.status === 'CANCELLED' ? `
+                <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800">
+                  <p class="font-bold">Cancelled & Refunded via Razorpay</p>
+                  <p class="font-mono text-[11px] mt-0.5">Refund Ref: ${order.refundId}</p>
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+              ${canSelfCancel ? `
+                <span class="text-[11px] text-amber-800 font-semibold">Within ${db.settings.cancellationWindowMins}m cancellation window</span>
+                <button onclick="cancelOrderWithRefund('${order.id}', false)"
+                  class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition">
+                  Cancel & Refund
+                </button>
+              ` : `
+                <span class="text-[11px] text-slate-400">QR Status: ${order.qrUsed ? 'Scanned & Redeemed' : order.status}</span>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      myOrders.forEach(order => {
+        const el = document.getElementById(`qrcode-${order.id}`);
+        if (el) {
+          el.innerHTML = '';
+          new QRCode(el, { text: order.qrToken, width: 68, height: 68, colorDark: '#0f172a', colorLight: '#ffffff' });
+        }
+      });
+    }
+
+    function cancelOrderWithRefund(orderId, isAdminOverride) {
+      const order = db.orders.find(o => o.id === orderId);
+      if (!order || order.status === 'CANCELLED' || order.status === 'COMPLETED') return;
+
+      order.items.forEach(it => {
+        const menuItem = db.menu.find(m => m.id === it.menuId);
+        if (menuItem) {
+          menuItem.stock += it.qty;
+          menuItem.available = true;
+        }
+      });
+
+      order.status = 'CANCELLED';
+      order.qrUsed = true;
+      order.refundId = 'rfnd_Rzp' + Math.floor(100000 + Math.random() * 900000);
+      saveDatabase();
+
+      pushNotification(`Refund Issued (#${order.id})`, `₹${order.total.toFixed(2)} refunded (${order.refundId}).`);
+      showToast(isAdminOverride ? `Admin override: #${order.id} refunded.` : `Order #${order.id} cancelled & refunded!`, 'info');
+      renderApp();
+    }
+
+    // =========================================================================
+    // 6. CANTEEN STAFF / MANAGER PANEL (INCLUDING ADD FOOD WITH IMAGE UPLOAD)
+    // =========================================================================
+    function setStaffTab(tab) {
+      activeStaffTab = tab;
+      renderStaffPanel();
+      lucide.createIcons();
+    }
+
+    function renderStaffPanel() {
+      ['queue', 'scanner', 'menuManage'].forEach(t => {
+        const btn = document.getElementById(`staffTab-${t}`);
+        const view = document.getElementById(`staffView-${t}`);
+        if (t === activeStaffTab) {
+          btn.className = 'px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2 bg-slate-900 text-white shadow-2xs';
+          view.classList.remove('hidden');
+        } else {
+          btn.className = 'px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2 text-slate-600 hover:bg-slate-100';
+          view.classList.add('hidden');
+        }
+      });
+
+      renderKitchenQueue();
+      renderQuickScanList();
+      renderStaffInventory();
+    }
+
+    function previewFoodImageFromUrl(url) {
+      const img = document.getElementById('staffFoodPreviewImg');
+      if (url && url.trim().length > 5) {
+        uploadedFoodBase64 = '';
+        img.src = url.trim();
+      }
+    }
+
+    function handleFoodImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        uploadedFoodBase64 = e.target.result;
+        document.getElementById('staffFoodPreviewImg').src = uploadedFoodBase64;
+        document.getElementById('staffFoodImageUrl').value = '';
+        showToast('Food photo loaded for preview!', 'info');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleStaffAddFoodItem(e) {
+      e.preventDefault();
+      const name = document.getElementById('staffFoodName').value.trim();
+      const category = document.getElementById('staffFoodCategory').value;
+      const price = parseFloat(document.getElementById('staffFoodPrice').value);
+      const stock = parseInt(document.getElementById('staffFoodStock').value, 10);
+      const veg = document.getElementById('staffFoodVeg').value;
+      const urlInput = document.getElementById('staffFoodImageUrl').value.trim();
+      const desc = document.getElementById('staffFoodDesc').value.trim() || `Freshly prepared ${name} from ${db.settings.collegeName} Canteen.`;
+
+      const finalImage = uploadedFoodBase64 || urlInput || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=700&q=80';
+
+      db.menu.unshift({
+        id: 'M-' + Date.now(),
+        name,
+        category,
+        price,
+        stock,
+        available: stock > 0,
+        veg,
+        image: finalImage,
+        desc
+      });
+
+      saveDatabase();
+      uploadedFoodBase64 = '';
+      e.target.reset();
+      document.getElementById('staffFoodPreviewImg').src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80';
+
+      pushNotification(`New Menu Item Added: ${name}`, `Available now at ₹${price} (${stock} portions).`);
+      showToast(`"${name}" added to menu with image & saved locally!`, 'success');
+      renderStaffInventory();
+    }
+
+    function renderKitchenQueue() {
+      ['PAID', 'PREPARING', 'READY'].forEach(status => {
+        const list = db.orders.filter(o => o.status === status);
+        document.getElementById(`count-${status}`).textContent = list.length;
+        const col = document.getElementById(`staffCol-${status}`);
+
+        if (list.length === 0) {
+          col.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">No orders in ${status}</div>`;
+          return;
+        }
+
+        col.innerHTML = list.map(o => {
+          const nextAction = status === 'PAID'
+            ? { label: 'Start Preparing →', next: 'PREPARING', style: 'bg-amber-600 hover:bg-amber-700 text-white' }
+            : status === 'PREPARING'
+            ? { label: 'Mark Ready for Pickup →', next: 'READY', style: 'bg-emerald-600 hover:bg-emerald-700 text-white' }
+            : { label: 'Verify QR & Handover', next: 'SCAN', style: 'bg-slate-900 hover:bg-slate-800 text-white' };
+
+          return `
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/80 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="font-extrabold text-sm text-slate-900">#${o.id}</span>
+                <span class="text-[11px] font-mono text-slate-500">${o.qrToken}</span>
+              </div>
+              <p class="text-xs font-semibold text-slate-700">${o.studentName}</p>
+              <ul class="text-xs text-slate-600 space-y-0.5 border-y border-slate-200/70 py-1.5">
+                ${o.items.map(i => `<li>• <strong>${i.qty}×</strong> ${i.name}</li>`).join('')}
+              </ul>
+              ${nextAction.next === 'SCAN' ? `
+                <button onclick="simulateScanToken('${o.qrToken}')" class="w-full py-2 rounded-lg text-xs font-bold transition ${nextAction.style}">
+                  ${nextAction.label}
+                </button>
+              ` : `
+                <button onclick="advanceOrderStatus('${o.id}', '${nextAction.next}')" class="w-full py-2 rounded-lg text-xs font-bold transition ${nextAction.style}">
+                  ${nextAction.label}
+                </button>
+              `}
+            </div>
+          `;
+        }).join('');
+      });
+    }
+
+    function advanceOrderStatus(orderId, newStatus) {
+      const order = db.orders.find(o => o.id === orderId);
+      if (!order) return;
+      order.status = newStatus;
+      saveDatabase();
+
+      pushNotification(`Order #${order.id} is now ${newStatus}`, `Updated by Canteen Kitchen.`);
+      showToast(`Order #${order.id} moved to ${newStatus}`, 'success');
+      renderApp();
+    }
+
+    function renderQuickScanList() {
+      const active = db.orders.filter(o => ['PAID', 'PREPARING', 'READY'].includes(o.status));
+      const container = document.getElementById('quickScanList');
+      if (active.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400">No uncollected QR tickets right now.</p>`;
+        return;
+      }
+      container.innerHTML = active.map(o => `
+        <div class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50">
+          <div>
+            <p class="text-xs font-bold text-slate-900">#${o.id} • <span class="font-mono text-amber-800">${o.qrToken}</span></p>
+            <p class="text-[11px] text-slate-500">${o.studentName} (${o.status})</p>
+          </div>
+          <button onclick="simulateScanToken('${o.qrToken}')" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold">
+            Scan QR
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function simulateScanToken(token) {
+      setStaffTab('scanner');
+      document.getElementById('qrVerifyInput').value = token;
+      verifyQrToken();
+    }
+
+    function verifyQrToken() {
+      const input = document.getElementById('qrVerifyInput').value.trim().toUpperCase();
+      const resultBox = document.getElementById('qrVerifyResult');
+      resultBox.classList.remove('hidden');
+
+      const order = db.orders.find(o => o.qrToken.toUpperCase() === input);
+      if (!order) {
+        resultBox.className = 'p-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-xs font-bold';
+        resultBox.innerHTML = `Invalid QR Token: No matching order found.`;
+        return;
+      }
+      if (order.status === 'CANCELLED') {
+        resultBox.className = 'p-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-xs font-bold';
+        resultBox.innerHTML = `REJECTED: Order #${order.id} was CANCELLED and refunded.`;
+        return;
+      }
+      if (order.qrUsed || order.status === 'COMPLETED') {
+        resultBox.className = 'p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-xs font-bold';
+        resultBox.innerHTML = `ALREADY USED: Token ${order.qrToken} has already been redeemed!`;
+        return;
+      }
+
+      order.status = 'COMPLETED';
+      order.qrUsed = true;
+      saveDatabase();
+
+      resultBox.className = 'p-4 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-900 text-xs space-y-1';
+      resultBox.innerHTML = `
+        <p class="font-extrabold text-sm text-emerald-800">✓ VERIFIED & HANDED OVER — Order #${order.id}</p>
+        <p>Student: <strong>${order.studentName}</strong></p>
+        <p>Items: ${order.items.map(i => `${i.qty}× ${i.name}`).join(', ')}</p>
+      `;
+      showToast(`Order #${order.id} verified and completed!`, 'success');
+      renderApp();
+    }
+
+    function renderStaffInventory() {
+      const tbody = document.getElementById('staffInventoryTable');
+      tbody.innerHTML = db.menu.map(item => `
+        <tr class="hover:bg-slate-50/70">
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-3">
+              <img src="${item.image}" alt="${item.name}" class="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0" />
+              <div>
+                <p class="font-bold text-slate-900">${item.name}</p>
+                <span class="text-[10px] font-bold ${item.veg === 'NON_VEG' ? 'text-rose-600' : 'text-emerald-600'}">${item.veg === 'NON_VEG' ? '● Non-Veg' : '● Veg'}</span>
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-4 text-xs text-slate-600">${item.category}</td>
+          <td class="py-3 px-4 font-bold text-slate-900">₹${item.price}</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-2">
+              <button onclick="adjustStock('${item.id}', -1)" class="w-6 h-6 rounded border border-slate-200 bg-white font-bold text-xs">-</button>
+              <span class="font-bold text-xs w-6 text-center">${item.stock}</span>
+              <button onclick="adjustStock('${item.id}', 1)" class="w-6 h-6 rounded border border-slate-200 bg-white font-bold text-xs">+</button>
+            </div>
+          </td>
+          <td class="py-3 px-4">
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${item.available && item.stock > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">
+              ${item.available && item.stock > 0 ? 'In Stock' : 'Sold Out'}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-right">
+            <button onclick="toggleItemAvailability('${item.id}')" class="px-3 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-xs font-bold">
+              ${item.available ? 'Mark Sold Out' : 'Restock'}
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function adjustStock(menuId, delta) {
+      const item = db.menu.find(m => m.id === menuId);
+      if (!item) return;
+      item.stock = Math.max(0, item.stock + delta);
+      item.available = item.stock > 0;
+      saveDatabase();
+      renderApp();
+    }
+
+    function toggleItemAvailability(menuId) {
+      const item = db.menu.find(m => m.id === menuId);
+      if (!item) return;
+      item.available = !item.available;
+      if (item.available && item.stock === 0) item.stock = 5;
+      saveDatabase();
+      renderApp();
+    }
+
+    // =========================================================================
+    // 7. HIDDEN COLLEGE ADMIN PANEL (HIGHEST AUTHORITY)
+    // =========================================================================
+    function setAdminTab(tab) {
+      activeAdminTab = tab;
+      renderAdminPanel();
+      lucide.createIcons();
+    }
+
+    function renderAdminPanel() {
+      ['overview', 'menu', 'orders', 'users', 'settings'].forEach(t => {
+        const btn = document.getElementById(`adminTab-${t}`);
+        const view = document.getElementById(`adminView-${t}`);
+        if (t === activeAdminTab) {
+          btn.className = 'px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5 bg-slate-900 text-white';
+          view.classList.remove('hidden');
+        } else {
+          btn.className = 'px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5 text-slate-600 hover:bg-slate-100';
+          view.classList.add('hidden');
+        }
+      });
+
+      renderAdminOverview();
+      renderAdminMenuTable();
+      renderAdminOrdersTable();
+      renderAdminUsersTable();
+      populateSettingsForm();
+    }
+
+    function renderAdminOverview() {
+      const paidOrders = db.orders.filter(o => o.status !== 'CANCELLED');
+      const totalRevenue = paidOrders.reduce((s, o) => s + o.total, 0);
+      const refundedOrders = db.orders.filter(o => o.status === 'CANCELLED');
+      const totalRefunded = refundedOrders.reduce((s, o) => s + o.total, 0);
+      const lowStock = db.menu.filter(m => m.stock <= 5);
+
+      document.getElementById('adminKpiGrid').innerHTML = `
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
+          <p class="text-xs font-bold text-slate-400 uppercase">Net Canteen Revenue</p>
+          <p class="text-2xl font-extrabold text-slate-900 mt-1">₹${totalRevenue.toFixed(2)}</p>
+          <p class="text-xs text-emerald-600 font-semibold mt-1">${paidOrders.length} active/completed orders</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
+          <p class="text-xs font-bold text-slate-400 uppercase">Live Kitchen Queue</p>
+          <p class="text-2xl font-extrabold text-amber-600 mt-1">${db.orders.filter(o => ['PAID','PREPARING','READY'].includes(o.status)).length}</p>
+          <p class="text-xs text-slate-500 mt-1">Orders currently in progress</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
+          <p class="text-xs font-bold text-slate-400 uppercase">Razorpay Refunds</p>
+          <p class="text-2xl font-extrabold text-rose-600 mt-1">₹${totalRefunded.toFixed(2)}</p>
+          <p class="text-xs text-slate-500 mt-1">${refundedOrders.length} refunded orders</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
+          <p class="text-xs font-bold text-slate-400 uppercase">Registered Accounts</p>
+          <p class="text-2xl font-extrabold text-slate-900 mt-1">${db.users.length}</p>
+          <p class="text-xs text-slate-500 mt-1">Saved in Chrome LocalStorage</p>
+        </div>
+      `;
+
+      const catTotals = { Breakfast: 0, Meals: 0, Snacks: 0, Beverages: 0, Desserts: 0 };
+      paidOrders.forEach(o => {
+        o.items.forEach(it => {
+          const m = db.menu.find(x => x.id === it.menuId);
+          const cat = m ? m.category : 'Meals';
+          catTotals[cat] = (catTotals[cat] || 0) + it.price * it.qty;
+        });
+      });
+      const maxCat = Math.max(1, ...Object.values(catTotals));
+      document.getElementById('categorySalesChart').innerHTML = Object.entries(catTotals).map(([cat, val]) => {
+        const pct = Math.round((val / maxCat) * 100);
+        return `
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs font-bold">
+              <span class="text-slate-700">${cat}</span>
+              <span class="text-slate-900">₹${val.toFixed(2)}</span>
+            </div>
+            <div class="h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div class="h-full bg-amber-500 rounded-full" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('adminAlertsList').innerHTML = lowStock.length === 0
+        ? `<p class="text-xs text-emerald-700 bg-emerald-50 p-3 rounded-xl font-semibold">All food items are well stocked.</p>`
+        : lowStock.map(m => `
+            <div class="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs">
+              <span class="font-bold text-amber-950">${m.name}</span>
+              <span class="font-extrabold text-rose-700">${m.stock} left</span>
+            </div>
+          `).join('');
+    }
+
+    function renderAdminMenuTable() {
+      document.getElementById('adminMenuTable').innerHTML = db.menu.map(item => `
+        <tr class="hover:bg-slate-50/70">
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-2.5">
+              <img src="${item.image}" class="w-9 h-9 rounded-lg object-cover border border-slate-200" />
+              <span class="font-bold text-slate-900">${item.name}</span>
+            </div>
+          </td>
+          <td class="py-3 px-4 text-xs text-slate-600">${item.category}</td>
+          <td class="py-3 px-4">
+            <input type="number" value="${item.price}" min="1" onchange="adminUpdatePrice('${item.id}', this.value)"
+              class="w-20 px-2 py-1 rounded-lg border border-slate-200 text-xs font-bold" />
+          </td>
+          <td class="py-3 px-4">
+            <input type="number" value="${item.stock}" min="0" onchange="adminUpdateStock('${item.id}', this.value)"
+              class="w-16 px-2 py-1 rounded-lg border border-slate-200 text-xs font-bold" />
+          </td>
+          <td class="py-3 px-4">
+            <button onclick="toggleItemAvailability('${item.id}')" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${item.available ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">
+              ${item.available ? 'Active' : 'Hidden'}
+            </button>
+          </td>
+          <td class="py-3 px-4 text-right">
+            <button onclick="adminDeleteMenuItem('${item.id}')" class="text-rose-600 hover:underline text-xs font-bold">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function adminUpdatePrice(id, val) {
+      const item = db.menu.find(m => m.id === id);
+      if (item && parseFloat(val) > 0) {
+        item.price = parseFloat(val);
+        saveDatabase();
+        showToast(`Updated ${item.name} price to ₹${item.price}.`, 'info');
+        renderApp();
+      }
+    }
+
+    function adminUpdateStock(id, val) {
+      const item = db.menu.find(m => m.id === id);
+      if (item && parseInt(val, 10) >= 0) {
+        item.stock = parseInt(val, 10);
+        item.available = item.stock > 0;
+        saveDatabase();
+        renderApp();
+      }
+    }
+
+    function adminDeleteMenuItem(id) {
+      db.menu = db.menu.filter(m => m.id !== id);
+      saveDatabase();
+      showToast('Food item removed from menu.', 'info');
+      renderApp();
+    }
+
+    function renderAdminOrdersTable() {
+      document.getElementById('adminOrdersTable').innerHTML = db.orders.map(o => `
+        <tr class="hover:bg-slate-50/70">
+          <td class="py-3 px-4">
+            <p class="font-bold text-slate-900">#${o.id}</p>
+            <p class="font-mono text-[11px] text-slate-500">${o.qrToken}</p>
+          </td>
+          <td class="py-3 px-4 text-xs text-slate-700">${o.studentName}</td>
+          <td class="py-3 px-4 text-xs text-slate-600">${o.items.map(i => `${i.qty}× ${i.name}`).join(', ')}</td>
+          <td class="py-3 px-4">
+            <p class="font-bold text-slate-900">₹${o.total.toFixed(2)}</p>
+            <p class="font-mono text-[10px] text-slate-400">${o.razorpayPaymentId}</p>
+          </td>
+          <td class="py-3 px-4">
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-800">${o.status}</span>
+          </td>
+          <td class="py-3 px-4 text-right space-x-1.5">
+            ${o.status !== 'CANCELLED' && o.status !== 'COMPLETED' ? `
+              <button onclick="advanceOrderStatus('${o.id}', 'COMPLETED')" class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">Complete</button>
+              <button onclick="cancelOrderWithRefund('${o.id}', true)" class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold">Force Refund</button>
+            ` : `<span class="text-xs text-slate-400">Closed</span>`}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAdminUsersTable() {
+      document.getElementById('adminUsersTable').innerHTML = db.users.map(u => `
+        <tr class="hover:bg-slate-50/70">
+          <td class="py-3 px-4 font-bold text-slate-900">${u.name}</td>
+          <td class="py-3 px-4 font-mono text-xs text-slate-600">${u.email}</td>
+          <td class="py-3 px-4">
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${u.role === 'STAFF' ? 'bg-amber-100 text-amber-900' : 'bg-blue-50 text-blue-700'}">${u.role}</span>
+          </td>
+          <td class="py-3 px-4">
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${u.active ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">
+              ${u.active ? 'Active' : 'Suspended'}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-right">
+            <button onclick="toggleUserActive('${u.id}')" class="text-xs font-bold text-amber-700 hover:underline">
+              ${u.active ? 'Suspend' : 'Activate'}
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function handleAdminAddUser(e) {
+      e.preventDefault();
+      const name = document.getElementById('admNewUserName').value.trim();
+      const email = document.getElementById('admNewUserEmail').value.trim().toLowerCase();
+      const password = document.getElementById('admNewUserPass').value;
+      const role = document.getElementById('admNewUserRole').value;
+
+      if (db.users.some(u => u.email.toLowerCase() === email)) {
+        showToast('Email already registered.', 'error');
+        return;
+      }
+
+      db.users.push({
+        id: 'U-' + Date.now(),
+        name,
+        identifier: role === 'STAFF' ? 'STF-' + Math.floor(10 + Math.random() * 90) : 'STU-' + Math.floor(100 + Math.random() * 900),
+        email,
+        password,
+        role,
+        active: true
+      });
+      saveDatabase();
+      e.target.reset();
+      showToast(`Created ${role} account for ${name}.`, 'success');
+      renderApp();
+    }
+
+    function toggleUserActive(userId) {
+      const u = db.users.find(x => x.id === userId);
+      if (!u) return;
+      u.active = !u.active;
+      saveDatabase();
+      renderApp();
+    }
+
+    function populateSettingsForm() {
+      document.getElementById('setCollegeName').value = db.settings.collegeName;
+      document.getElementById('setOperatingHours').value = db.settings.operatingHours;
+      document.getElementById('setGstPercent').value = db.settings.gstPercent;
+      document.getElementById('setCancelWindow').value = db.settings.cancellationWindowMins;
+      document.getElementById('setAdminEmail').value = db.settings.adminEmail;
+      document.getElementById('setAdminPassword').value = db.settings.adminPassword;
+      document.getElementById('setRazorpayKey').value = db.settings.razorpayKeyId;
+    }
+
+    function handleSaveCollegeSettings(e) {
+      e.preventDefault();
+      db.settings.collegeName = document.getElementById('setCollegeName').value.trim();
+      db.settings.operatingHours = document.getElementById('setOperatingHours').value.trim();
+      db.settings.gstPercent = parseFloat(document.getElementById('setGstPercent').value);
+      db.settings.cancellationWindowMins = parseInt(document.getElementById('setCancelWindow').value, 10);
+      db.settings.adminEmail = document.getElementById('setAdminEmail').value.trim();
+      db.settings.adminPassword = document.getElementById('setAdminPassword').value;
+      db.settings.razorpayKeyId = document.getElementById('setRazorpayKey').value.trim();
+      saveDatabase();
+      showToast('College settings & Admin credentials saved locally!', 'success');
+      renderApp();
+    }
+
+    function resetDemoDatabase() {
+      localStorage.removeItem(STORAGE_KEY);
+      db = loadDatabase();
+      showToast('Database reset to default college setup.', 'info');
+      renderApp();
+    }
+
+    function exportFinancialCSV() {
+      const headers = ['OrderID', 'Student', 'Subtotal', 'GST', 'Total', 'Status', 'PaymentID', 'RefundID'];
+      const rows = db.orders.map(o => [o.id, `"${o.studentName}"`, o.subtotal, o.tax, o.total, o.status, o.razorpayPaymentId, o.refundId || '']);
+      const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${db.settings.collegeName.replace(/\s+/g, '_')}_Canteen_Report.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // =========================================================================
+    // 8. NOTIFICATIONS & TOASTS
+    // =========================================================================
+    function pushNotification(title, message) {
+      db.notifications.unshift({ id: 'N-' + Date.now(), title, message, time: 'Just now', unread: true });
+      saveDatabase();
+      renderNotifications();
+    }
+
+    function renderNotifications() {
+      const unread = db.notifications.filter(n => n.unread).length;
+      const badge = document.getElementById('notifBadge');
+      if (unread > 0) {
+        badge.textContent = unread;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      document.getElementById('notificationList').innerHTML = db.notifications.map(n => `
+        <div class="p-3.5 rounded-xl border ${n.unread ? 'bg-amber-50/70 border-amber-200' : 'bg-slate-50 border-slate-200'} space-y-1">
+          <div class="flex justify-between items-start gap-2">
+            <p class="text-xs font-extrabold text-slate-900">${n.title}</p>
+            <span class="text-[10px] text-slate-400 shrink-0">${n.time}</span>
+          </div>
+          <p class="text-xs text-slate-600">${n.message}</p>
+        </div>
+      `).join('');
+    }
+
+    function toggleNotificationDrawer() {
+      const drawer = document.getElementById('notificationDrawer');
+      if (drawer.classList.contains('hidden')) {
+        db.notifications.forEach(n => n.unread = false);
+        saveDatabase();
+        renderNotifications();
+        drawer.classList.remove('hidden');
+      } else {
+        drawer.classList.add('hidden');
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const colors = {
+        success: 'bg-emerald-950 text-white border-emerald-700',
+        error: 'bg-rose-950 text-white border-rose-700',
+        warning: 'bg-amber-950 text-white border-amber-700',
+        info: 'bg-slate-900 text-white border-slate-700'
+      };
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-xl text-xs font-bold transition-all ${colors[type]}`;
+      toast.textContent = message;
+      document.getElementById('toastContainer').appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+  </script>
+</body>
+</html>
